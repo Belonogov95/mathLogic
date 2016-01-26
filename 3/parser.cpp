@@ -43,7 +43,7 @@ ull calcHash(string & s) {
 }
 
 Node::Node (string type, Node * l, Node * r): type(type), l(l), r(r) {
-    db(type);
+    //db(type);
     if (isLetter(type)) {
         s = type;
         assert(l == NULL && r == NULL);
@@ -75,7 +75,7 @@ string removeSpaces(string s) {
 Parser::Parser(string data): data(data) { }
 
 Token Parser::nextToken() {
-    db2(data[cur], cur);
+    //db2(data[cur], cur);
     for (; cur < (int)data.size() && data[cur] == ' '; cur++);        
     if (cur == (int)data.size()) return ""; 
     if (data[cur] == '(') return "(";

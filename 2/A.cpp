@@ -90,6 +90,7 @@ void read() {
         expr.pb(s);
     }
 }
+
 void init() {
     axiom.pb("A->B->A");
     axiom.pb("(A->B)->(A->B->C)->(A->C)");
@@ -162,6 +163,7 @@ node * makeTree(string & s) {
         return NULL;
     return rec(s, p, 0, s.size());
 }
+
 
 bool compAx(node * v, node * ax, int level = 0) {
     if (v == NULL && ax == NULL) return 1;
