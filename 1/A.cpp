@@ -158,6 +158,18 @@ bool compAx(node * v, node * ax, int level = 0) {
     return ans;
 }
 
+bool isSpace(char ch) {
+    return ch == ' ' || ch == '\n' || ch == '\t' || ch == '\r';
+}
+
+string cutSpace(string s) {
+    string tmp;
+    for (int i = 0; i < (int)s.size(); i++)
+        if (!isSpace(s[i]))
+            tmp += s[i];
+    return tmp;
+}
+
 void solve() {
     b.pb(oper("->", 4));
     b.pb(oper("&", 3));
@@ -167,7 +179,12 @@ void solve() {
         a.pb(makeTree(s));
     string s;
     bool mainFlag = 1;
-    for (int tt = 0; cin >> s != 0; tt++) {
+    for (int tt = 0; getline(cin, s) != 0; tt++) {
+        s = cutSpace(s);
+        if (s.empty()) {
+            tt--; 
+            continue;
+        }
         printf("(%d) ", tt + 1);
         cout << s << " ";
 
@@ -225,8 +242,8 @@ void stress() {
 
 int main(){
 #ifdef DEBUG
-    freopen("in", "r", stdin);
-    freopen("out", "w", stdout);
+    //freopen("in", "r", stdin);
+    //freopen("out", "w", stdout);
     //freopen("test.txt", "r", stdin);
 #endif
     if (1) {

@@ -66,9 +66,23 @@ vector < string > answer;
 vector < string > hypothesis;
 vector < node * > hypothesisTree;
 
+bool isSpace(char ch) {
+    return ch == ' ' || ch == '\n' || ch == '\t' || ch == '\r';
+}
+
+string cutSpace(string s) {
+    string tmp;
+    for (int i = 0; i < (int)s.size(); i++)
+        if (!isSpace(s[i]))
+            tmp += s[i];
+    return tmp;
+}
+
 void read() {
     string s;
     getline(cin, s);
+    s = cutSpace(s);
+
     int cur = 0;
     for (int i = 0; i < (int)s.size(); i++) 
         if (s[i] == ',') {
@@ -86,9 +100,13 @@ void read() {
     assert(flag);
     withoutProof = expr.size();
     cerr << "withoutProof: " << (withoutProof) << endl;
-    for (; cin >> s != 0; ) {
-        expr.pb(s);
+    for (; getline(cin, s) != 0; ) {
+    //for (; cin >> s != 0; ) {
+        s = cutSpace(s);
+        if (s.empty()) continue;
+        expr.pb(s); 
     }
+    //cerr << expr.size() << endl;
 }
 
 void init() {
@@ -327,9 +345,8 @@ void stress() {
 
 int main(){
 #ifdef DEBUG
-    freopen("in", "r", stdin);
-    freopen("out", "w", stdout);
-    
+    freopen("in1", "r", stdin);
+    //freopen("out", "w", stdout);
     //freopen("test.txt", "r", stdin);
 #endif
     if (1) {
