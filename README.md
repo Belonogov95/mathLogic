@@ -1,5 +1,0 @@
-mathLogic
-=========
-
-My first rep
-...

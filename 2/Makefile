@@ -1,9 +1,9 @@
 CXXFLAGS= -std=c++11 -O2 -Wno-unused-result
 
-all: A 
+all: solve 
 
-A: 
-	g++ $(CXXFLAGS) -o $@ A.cpp
+solve: 
+	g++ $(CXXFLAGS) -o $@ deduction.cpp 2.cpp parser.cpp
 
 
 
