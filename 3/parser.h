@@ -13,7 +13,6 @@ bool isLetter(string s);
 
 struct Node {
     string type;
-    //int type; // ! 4 ... & 3 ... | 2 ... -> 1
     Node * l, * r;
     ull hash;
     string s;

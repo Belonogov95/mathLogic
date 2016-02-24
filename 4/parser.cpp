@@ -2,9 +2,37 @@
 #include "parser.h"
 
 
-Node::Node(string type, Node * l, Node * r): type(type), l(l), r(r) { }
-Node::Node(string type, string val): type(type), val(val) { }
-Node::Node(string type, string val, vector < Node * > ch): type(type), val(val), ch(ch) { }
+Node::Node(string type, Node * l, Node * r): type(type), l(l), r(r) {
+    hash = Hash(type);
+    if (l != NULL)
+        hash = hash + l->hash.addBracket();
+    if (r != NULL)
+        hash = hash + r->hash.addBracket();
+}
+
+
+Node::Node(string type, string val): type(type), l(NULL), r(NULL), val(val), hash(Hash(type) + Hash(val)) { }
+Node::Node(string type, string val, vector < Node * > ch): type(type), l(NULL), r(NULL), val(val), ch(ch) {
+    hash = Hash(type) + Hash(val);
+    hash = hash + Hash("(");
+    //assert(!ch.empty());
+    for (int i = 0; i < (int)ch.size(); i++) {
+        hash = hash + ch[i]->hash;
+        if (i + 1 < (int)ch.size())
+            hash = hash + Hash(",");
+    }
+    hash = hash + Hash(")");
+}
+
+vector < long long > deg(1, 1);
+
+long long getPow(int pos) {
+    //db(pos);
+    for (; pos >= (int)deg.size(); ) {
+        deg.pb(deg.back() * P % MOD);
+    }
+    return deg[pos];
+}
 
 string removeSpace(string s) {
     string res;
@@ -19,17 +47,22 @@ void printTree(Node * v, int tab) {
     printTree(v->r, tab + 1);
     for (int i = 0; i < tab; i++)
         epr("\t");
-    cerr << "type val: " << v->type << " " << v->val << endl;
+    cerr << "type val: " << v->type << " " << v->val << "                     ";
+    for (auto t: v->ch)
+        cerr << t->type << " ";
+    cerr << endl;
     printTree(v->l, tab + 1);
 } 
 
 Parser::Parser(string s) {
     data = removeSpace(s);
     cur = 0;
+    db(data);
 }
 
 string Parser::nextToken() {
-    assert(cur < (int)data.size());
+    assert(cur <= (int)data.size());
+    if (cur == (int)data.size()) return "";
     if (cur + 1 < (int)data.size() && data[cur] == '-' && data[cur + 1] == '>') 
         return "->";
     return string(1, data[cur]);
@@ -42,11 +75,8 @@ void Parser::shiftCur() {
         cur++;
 }
 
-
-
-
-
 Node * Parser::parsePredicate() {
+    //db("Predicate");
     if (nextToken().size() == 1 && isupper(nextToken()[0])) {
         string name = nextToken();
         shiftCur();
@@ -69,14 +99,21 @@ Node * Parser::parsePredicate() {
     }
     else {
         Node * v = parseTerm();
-        assert(nextToken() == "=");
+
+        //db2(nextToken(), cur);
+        //cerr << data[cur - 1] << data[cur] << data[cur + 1] << endl;
+
+        if (nextToken() != "=") {
+            return NULL;
+        }
+        //assert(nextToken() == "=");
+
         shiftCur();
         Node * u = parseTerm();
         return new Node("=", v, u);
     }
 
 }
-
 
 Node * Parser::parseTerm() {
     Node * v = parseSummand();        
@@ -156,22 +193,35 @@ Node * Parser::parseVar() {
 
 
 Node * Parser::parseUnar() {
+    //db("unar");
     if (nextToken() == "!") {
         shiftCur();
-        return new Node("!", parseUnar(), NULL);
+        Node * v = parseUnar();
+        if (v == NULL) return NULL;
+        return new Node("!", v, NULL);
     }
     if (nextToken() == "(") {
+        int currentCur = cur;
         shiftCur();
+        //db("________here");
         Node * v = parseExpr();
-        assert(nextToken() == ")");
-        shiftCur();
-        return v;
+        //db2("__________", cur);
+        
+        if (v != NULL) {
+            assert(nextToken() == ")");
+            shiftCur();
+            return v;
+        }
+        //else
+            //db("work!!!!!!!!!!");
+        cur = currentCur; 
     }
     if (nextToken() == "@" || nextToken() == "?") {
         Token curToken = nextToken();
         shiftCur();
         Node * v = parseVar();
         Node * u = parseUnar();
+        if (u == NULL) return NULL;
         return new Node(curToken, v, u);
     }
     return parsePredicate();
@@ -179,9 +229,11 @@ Node * Parser::parseUnar() {
 
 Node * Parser::parseConjunct() {
     Node * v = parseUnar();
+    if (v == NULL) return NULL;
     for (; nextToken() == "&"; ) {
         shiftCur();
         Node * u = parseUnar();
+        if (u == NULL) return NULL;
         v = new Node("&", v, u);
     }
     return v;
@@ -189,9 +241,11 @@ Node * Parser::parseConjunct() {
 
 Node * Parser::parseDisjunct() {
     Node * v = parseConjunct();
+    if (v == NULL) return NULL;
     for (; nextToken() == "|"; ) {
         shiftCur();
         Node * u = parseConjunct();
+        if (u == NULL) return NULL;
         v = new Node("|", v, u);
     }
     return v;
@@ -200,17 +254,16 @@ Node * Parser::parseDisjunct() {
 
 Node * Parser::parseExpr() {
     Node * v = parseDisjunct();
+    if (v == NULL) return NULL;
     for (; nextToken() == "->"; ) {
         shiftCur();  
         Node * u = parseExpr();
+        if (u == NULL) return NULL;
         v = new Node("->", v, u);
     }
     return v;
 
 }
-
-
-
 
 
 
