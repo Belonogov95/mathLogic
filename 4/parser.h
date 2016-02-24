@@ -44,6 +44,8 @@ struct Node {
 
 void printTree(Node * v, int tab);
 
+
+
 struct Parser {
     int cur;
     string data;
@@ -60,8 +62,6 @@ struct Parser {
     Node * parseTerm();
     Node * parseSummand();
     Node * parseMultiply();
-
-
 };
 
 #endif
