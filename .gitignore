@@ -1,5 +1,9 @@
 
 tests/
 *.swp
+*.swo
+*.in
+*.out
+4/bin
 
 

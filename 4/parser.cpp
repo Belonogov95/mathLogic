@@ -2,36 +2,64 @@
 #include "parser.h"
 
 
+ull calcHash(string & s) {
+    ull hash = 0;
+    for (auto ch: s)
+        hash = hash * P + ch;
+    return hash;
+}
+
+string addBracket(string s) {
+    return "(" + s + ")";
+}
+
+vector < string > split(string s, string pattern) {
+    vector < string > res;
+    int cur = 0;
+    for (int i = 0; i + pattern.size() <= s.size(); i++) {
+        if (s.substr(i, pattern.size()) == pattern) {
+            res.pb(s.substr(cur, i - cur));
+            i += pattern.size();
+            cur = i;
+            i--;
+        }
+    }
+    assert(cur < (int)s.size());
+    res.pb(s.substr(cur, s.size() - cur));
+    return res;
+}
+
 Node::Node(string type, Node * l, Node * r): type(type), l(l), r(r) {
-    hash = Hash(type);
-    if (l != NULL)
-        hash = hash + l->hash.addBracket();
-    if (r != NULL)
-        hash = hash + r->hash.addBracket();
+    if (l != NULL && r != NULL) 
+        s = addBracket(l->s) + type + addBracket(r->s);
+    else {
+        assert(l != NULL);
+        if (type == "'")
+            s = addBracket(l->s) + type;
+        else
+            s = type + addBracket(l->s);
+    }
+    hash = calcHash(s);
 }
 
+Node::Node(string type, string val): type(type), l(NULL), r(NULL) {
+    s = val;
+    hash = calcHash(s);
+}
 
-Node::Node(string type, string val): type(type), l(NULL), r(NULL), val(val), hash(Hash(type) + Hash(val)) { }
-Node::Node(string type, string val, vector < Node * > ch): type(type), l(NULL), r(NULL), val(val), ch(ch) {
-    hash = Hash(type) + Hash(val);
-    hash = hash + Hash("(");
-    //assert(!ch.empty());
+Node::Node(string type, string val, vector < Node * > ch): type(type), l(NULL), r(NULL), ch(ch) {
+    s = val;
+    if (!ch.empty())
+        s += "(";
     for (int i = 0; i < (int)ch.size(); i++) {
-        hash = hash + ch[i]->hash;
-        if (i + 1 < (int)ch.size())
-            hash = hash + Hash(",");
+        s += ch[i]->s;
+        if (i + 1 != (int)ch.size())
+            s += ", ";
     }
-    hash = hash + Hash(")");
-}
+    if (!ch.empty())
+        s += ")";
 
-vector < long long > deg(1, 1);
-
-long long getPow(int pos) {
-    //db(pos);
-    for (; pos >= (int)deg.size(); ) {
-        deg.pb(deg.back() * P % MOD);
-    }
-    return deg[pos];
+    hash = calcHash(s);
 }
 
 string removeSpace(string s) {
@@ -47,7 +75,7 @@ void printTree(Node * v, int tab) {
     printTree(v->r, tab + 1);
     for (int i = 0; i < tab; i++)
         epr("\t");
-    cerr << "type val: " << v->type << " " << v->val << "                     ";
+    cerr << "type val: " << v->type << " " << v->s << "                     ";
     for (auto t: v->ch)
         cerr << t->type << " ";
     cerr << endl;
@@ -57,7 +85,6 @@ void printTree(Node * v, int tab) {
 Parser::Parser(string s) {
     data = removeSpace(s);
     cur = 0;
-    db(data);
 }
 
 string Parser::nextToken() {
@@ -137,7 +164,7 @@ Node * Parser::parseMultiply() {
     Node * result;
     if (nextToken() == "0") {
         shiftCur();
-        result = new Node("0", NULL, NULL);
+        result = new Node("0", "0");
     }
     else if (nextToken() == "(") {
         shiftCur();
@@ -264,8 +291,3 @@ Node * Parser::parseExpr() {
     return v;
 
 }
-
-
-
-
-
