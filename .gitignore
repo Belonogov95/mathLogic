@@ -5,5 +5,4 @@ tests/
 *.in
 *.out
 4/bin
-
-
+*.swp

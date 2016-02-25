@@ -1,13 +1,16 @@
 
-CXXFLAGS= -std=c++11 -O2 -Wno-unused-result -D_GLIBCXX_DEBUG -fsanitize=address
+CXXFLAGS= -std=c++11 -O2 -Wno-unused-result
 
-all: 4 
+all: solve 
 
-4: 4.cpp parser.cpp parser.h main.h
-	g++ $(CXXFLAGS) -o bin/4 4.cpp parser.cpp
+solve: 
+	g++ $(CXXFLAGS) -o $@ 4.cpp parser.cpp
 
 
 clean:
-	rm bin/4
+	rm solve 
+
+
+
 
 
