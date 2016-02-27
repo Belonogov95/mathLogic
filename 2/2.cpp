@@ -26,6 +26,7 @@ void read() {
     string s;
     vector < Line > line;
     for (; getline(cin, s) != 0; ) {
+        db(s);
         s = cutSpace(s);
         s = G[0] + "|-" + s;
         //db2(s.size(), s);

@@ -35,6 +35,10 @@ void read() {
     db(proof.size());
 }
 
+vector < string > rule2; 
+vector < string > rule3_1;
+vector < string > rule3_2;
+
 void init() {
     freopen("axiom_scheme.txt", "r", stdin);
     cin.clear();
@@ -55,6 +59,34 @@ void init() {
         if (s.empty()) continue;
         Parser p(s);
         mathAxiom.pb(p.parseExpr());
+    }
+
+    freopen("rule_2.txt", "r", stdin);
+    cin.clear();
+    for (; getline(cin, s); ) {
+        s = removeSpace(s);
+        if (s.empty()) continue;
+        Parser p(s);
+        rule2.pb(p.parseExpr()->s);
+    }
+
+    freopen("ruleAny_part1.txt", "r", stdin);
+    cin.clear();
+    for (; getline(cin, s); ) {
+        s = removeSpace(s);
+        if (s.empty()) continue;
+        Parser p(s);
+        rule3_1.pb(p.parseExpr()->s);
+    }
+
+
+    freopen("ruleAny_part2.txt", "r", stdin);
+    cin.clear();
+    for (; getline(cin, s); ) {
+        s = removeSpace(s);
+        if (s.empty()) continue;
+        Parser p(s);
+        rule3_2.pb(p.parseExpr()->s);
     }
 }
 
@@ -262,6 +294,79 @@ bool check12(Node * head) {
     return 0;
 }
 
+void printRule(vector < string > rule2, map < char, string > q) {
+    for (auto s: rule2) {
+        for (auto ch: s) {
+            if (q.count(ch) == 1) 
+                cout << q[ch];
+            else
+                cout << ch;
+        }
+        cout << endl;
+    }      
+}
+
+bool checkRuleExist(Node * head) {
+    if (head->type != "->") return 0;
+    if (head->l->type != "?") return 0;
+    string s = addBracket(head->l->r->s) + "->" + addBracket(head->r->s);
+    string var = head->l->l->s;
+    Parser p(s);
+    Node * u = p.parseExpr();
+    if (proved.count(u->hash) == 1) {
+        if (!mainHyp.empty()) {
+            map < char, string > q;                 
+            q['A'] = mainHyp;
+            q['B'] = u->l->s;
+            q['Y'] = u->r->s;
+            printRule(rule2, q);
+            cout << addBracket(u->l->s) << "->" << addBracket(mainHyp) << "->" << addBracket(u->r->s) << endl;
+            cout << "?" <<  var << addBracket(u->l->s) << "->" << addBracket(mainHyp) << "->" << addBracket(u->r->s) << endl;
+
+            q['A'] = "?" + var + addBracket(u->l->s);
+            q['B'] = mainHyp;
+            q['Y'] = addBracket(u->r->s);
+            printRule(rule2, q);
+
+            cout << addBracket(mainHyp) + "->" + "?" + var + addBracket(u->l->s) + "->" + addBracket(u->r->s) << endl;
+        }
+        return 1;
+    }
+    else
+        return 0;
+}
+
+bool checkRuleAny(Node * head) {
+    if (head->type != "->") return 0;
+    if (head->r->type != "@") return 0;
+    string var = head->r->l->s;
+    Node * fi = head->l;
+    Node * psi = head->r->r;
+    
+    string s = fi->s + "->" + psi->s;
+    Parser p(s);
+    Node * u = p.parseExpr();
+    if (proved.count(u->hash) == 0) return 0;
+
+    if (!mainHyp.empty()) {
+        map < char, string > q;                 
+        q['A'] = mainHyp;
+        q['B'] = u->l->s;
+        q['Y'] = u->r->s;
+        printRule(rule3_2, q);
+        cout << addBracket(mainHyp) + "&" + addBracket(u->l->s) + "->" + addBracket(u->r->s) << endl;
+        cout << addBracket(mainHyp) + "&" + addBracket(u->l->s) + "->@" + var + addBracket(u->r->s) << endl;
+
+        q['A'] = mainHyp;
+        q['B'] = u->l->s;
+        q['Y'] = "@" + var + addBracket(u->r->s);
+        printRule(rule3_1, q);
+        cout << addBracket(mainHyp) + "->" + addBracket(u->l->s) + "->@" + var + addBracket(u->r->s) << endl;
+    }
+
+    return 1;
+}
+
 void solve() {
     freopen("answer.txt", "w", stdout);
 
@@ -320,6 +425,9 @@ void solve() {
                 }
             }
         } 
+
+        if (!flag) flag |= checkRuleExist(proof[i]);
+        if (!flag) flag |= checkRuleAny(proof[i]);
 
 
 
