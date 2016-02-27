@@ -32,10 +32,7 @@ void Deduction :: makeAA() {
     tmp.pb("(A)->(A)");
     for (auto s: tmp) {
         add(replace(s, 'A', term));
-        //Parser p(g);
-        //answer->pb(Line(p.parse()));
     }
-        //answer[(int)answer.size() - i] = replace(answer[(int)answer.size() - i], 'A', A);
 }
 
 Node * Deduction :: myParse(string tmp) {

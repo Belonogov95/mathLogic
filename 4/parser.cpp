@@ -14,7 +14,15 @@ string addBracket(string s) {
 }
 
 
-
+string replace(string s, char u, string t) {
+    string ans;
+    for (auto ch : s) 
+        if (ch == u)
+            ans += t;
+        else
+            ans += ch;
+    return ans;
+}
 
 
 vector < string > split(string s, string pattern) {
@@ -34,7 +42,10 @@ vector < string > split(string s, string pattern) {
 }
 
 Node::Node(string type, Node * l, Node * r): type(type), l(l), r(r) {
-    if (l != NULL && r != NULL) 
+    if (type == "@" || type == "?") {
+        s = type + l->s + addBracket(r->s);
+    }
+    else if (l != NULL && r != NULL) 
         s = addBracket(l->s) + type + addBracket(r->s);
     else {
         assert(l != NULL);
