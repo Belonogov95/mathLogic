@@ -7,6 +7,9 @@ vector < Node * > axiom;
 vector < Node * > mathAxiom;
 string mainHyp;
 Node * target;
+set < string > mainHypFreeVar;
+
+set < string > findFree(Node * v, set < string > blocked);
 
 void read() {
     //freopen("correct12.in", "r", stdin);
@@ -27,6 +30,8 @@ void read() {
         auto hyp = splitBalance(tmp[0], ",");
         assert(!hyp.empty());
         mainHyp = hyp.back();
+        Parser pp(mainHyp);
+        mainHypFreeVar = findFree(pp.parseExpr(), set < string > ());
         for (auto s: hyp) {
             Parser p(s);
             //db("tut");
@@ -47,7 +52,7 @@ void read() {
         Parser p(s);
         proof.pb(p.parseExpr());
     }
-    assert(!proof.empty() && target->hash == proof.back()->hash);
+    //assert(!proof.empty() && target->hash == proof.back()->hash);
     db(proof.size());
 }
 
@@ -310,8 +315,8 @@ bool check11(Node * head) {
             //db(x);
         auto tmp = makeSubst(head->l->r, var, theta, sfree, 1);
         u = tmp.fr;
-        db(u->s);
-        db(flagFail);
+        //db(u->s);
+        //db(flagFail);
 
         if (flagFail) return 0;
     }
@@ -365,8 +370,14 @@ void printRule(vector < string > rule2, map < char, string > q) {
 bool checkRuleExist(Node * head) {
     if (head->type != "->") return 0;
     if (head->l->type != "?") return 0;
-    string s = addBracket(head->l->r->s) + "->" + addBracket(head->r->s);
+    Node * fi = head->r;
     string var = head->l->l->s;
+    if (mainHypFreeVar.count(var) == 1) return 0;
+    auto freeFi = findFree(fi, set < string > ());
+    if (freeFi.count(var) == 1) return 0;
+
+    string s = addBracket(head->l->r->s) + "->" + addBracket(head->r->s);
+
     Parser p(s);
     Node * u = p.parseExpr();
     if (proved.count(u->hash) == 1) {
@@ -398,6 +409,7 @@ bool checkRuleAny(Node * head) {
     if (head->type != "->") return 0;
     if (head->r->type != "@") return 0;
     string var = head->r->l->s;
+    if (mainHypFreeVar.count(var) == 1) return 0;
     Node * fi = head->l;
     Node * psi = head->r->r;
     auto freeFi = findFree(fi, set < string > ());
@@ -445,7 +457,7 @@ void solve() {
 
     for (int i = 0; i < (int)proof.size(); i++) {
         //if (i % 1000 == 0) db(i);
-        db2(i, proof[i]->s);
+        //db2(i, proof[i]->s);
         //cout << "----------\n";
         bool flag = 0;
         for (auto v: axiom) {

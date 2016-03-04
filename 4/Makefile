@@ -1,6 +1,6 @@
 
-#CXXFLAGS= -std=c++11 -Wno-unused-result -O3
-CXXFLAGS= -std=c++11 -Wno-unused-result -D_GLIBCXX_DEBUG -fsanitize=address
+CXXFLAGS= -std=c++11 -Wno-unused-result -O3
+#CXXFLAGS= -std=c++11 -Wno-unused-result -D_GLIBCXX_DEBUG -fsanitize=address
 
 all: solve 
 
