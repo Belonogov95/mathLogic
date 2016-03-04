@@ -9,6 +9,8 @@ string removeSpace(string s);
 
 vector < string > split(string s, string pattern);
 
+vector < string > splitBalance(string s, string pattern);
+
 string addBracket(string s);
 
 string replace(string s, char u, string t);

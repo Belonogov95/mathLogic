@@ -24,6 +24,24 @@ string replace(string s, char u, string t) {
     return ans;
 }
 
+vector < string > splitBalance(string s, string pattern) {
+    vector < string > res;
+    int cur = 0;
+    int bal = 0;
+    for (int i = 0; i + pattern.size() <= s.size(); i++) {
+        if (bal == 0 && s.substr(i, pattern.size()) == pattern) {
+            res.pb(s.substr(cur, i - cur));
+            i += pattern.size();
+            cur = i;
+            i--;
+        }
+        if (s[i] == '(') bal++;
+        if (s[i] == ')') bal--;
+    }
+    assert(cur < (int)s.size());
+    res.pb(s.substr(cur, s.size() - cur));
+    return res;
+}
 
 vector < string > split(string s, string pattern) {
     vector < string > res;

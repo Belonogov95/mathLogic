@@ -6,6 +6,7 @@ vector < Node * > proof;
 vector < Node * > axiom;
 vector < Node * > mathAxiom;
 string mainHyp;
+Node * target;
 
 void read() {
     //freopen("correct12.in", "r", stdin);
@@ -16,27 +17,37 @@ void read() {
     getline(cin, s);
     s = removeSpace(s);
     auto tmp = split(s, "|-");
+    if (tmp[0].empty()) 
+        tmp.erase(tmp.begin());
     assert(tmp.size() == 2 || tmp.size() == 1);
+
+    //db(tmp.size());
+    //db2(tmp[0], tmp[1]);
     if (tmp.size() == 2) {
-        auto hyp = split(tmp[0], ",");
+        auto hyp = splitBalance(tmp[0], ",");
         assert(!hyp.empty());
-            mainHyp = hyp.back();
+        mainHyp = hyp.back();
         for (auto s: hyp) {
             Parser p(s);
+            //db("tut");
+            //db(s);
             hypoth.pb(p.parseExpr());
         }
     }
-    else {
-        Parser p(s);
-        proof.pb(p.parseExpr());
-    }
+    //db("here");
+    //db(tmp.back());
+    Parser p(tmp.back());
+    target = p.parseExpr();
 
-    for (; getline(cin, s); ) {
+    for (int it = 0; getline(cin, s);it++ ) {
+        if (it % 1000 == 0)
+            db(it);
         s = removeSpace(s);
         if (s.empty()) continue;
         Parser p(s);
         proof.pb(p.parseExpr());
     }
+    assert(!proof.empty() && target->hash == proof.back()->hash);
     db(proof.size());
 }
 
@@ -133,6 +144,7 @@ set < ull > proved;
 map < ull, set < ull > > need;
 
 Node * createExpCopy(Node * v) {
+    //db2("create copy: ", v->s);
     Parser p(v->s);
     return p.parseExpr();
 }
@@ -148,42 +160,70 @@ pair < Node *, int > makeSubst(Node * v, string from, Node * to, set < string > 
         flag &= blocked.count(v->l->s) == 0;
         auto tmp = makeSubst(v->r, from, to, blocked, flag);
         v->r = tmp.fr;
-        return mp(v, tmp.sc);
+        return mp(new Node(v->type, v->l, tmp.fr), tmp.sc);
     } 
     if (v->type == "a" && v->s == from)  {
         flagFail |= !flag;
-        return mp(createExpCopy(to), 1);
+        //db2("here", to->s);
+        //auto tmp =  createExpCopy(to);
+        //db(tmp);
+        return mp(to, 1);
     }
+    if (v->l == NULL && v->r == NULL && v->ch.empty()) 
+        return mp(new Node(v->type, v->s), 0);
+
+    if (v->ch.empty()) {
+        int sum = 0;
+        Node * l = NULL, * r = NULL;
+        if (v->l != NULL) {
+            auto ll = makeSubst(v->l, from, to, blocked, flag);
+            //db2(ll.fr, ll.sc);
+            l = ll.fr;
+            sum += ll.sc;
+        }
+        if (v->r != NULL) {
+            auto rr = makeSubst(v->r, from, to, blocked, flag);
+            r = rr.fr;
+            sum += rr.sc;
+        }
+        //db2(v->s, v->r->s);
+        //db2(v->s, v->l->s);
+        //db2(l, r);
+        Node * tt = new Node(v->type, l, r);
+        //db(tt->s);
+        return mp(tt, sum);
+    }
+    vector < Node * > ch;
     int sum = 0;
-    if (v->l != NULL) {
-        auto tmp = makeSubst(v->l, from, to, blocked, flag);
-        v->l = tmp.fr;
-        sum += tmp.sc;
-    }
-    if (v->r != NULL) {
-        auto tmp = makeSubst(v->r, from, to, blocked, flag);
-        v->r = tmp.fr;
-        sum += tmp.sc;
-    }
     for (int i = 0; i < (int)v->ch.size(); i++) {
         auto tmp = makeSubst(v->ch[i], from, to, blocked, flag);
-        v->ch[i] = tmp.fr;
+        ch.pb(tmp.fr);
         sum += tmp.sc;
     }
-    return mp(v, sum);
+    string val;
+    auto gg = split(v->s, "(");
+    val = gg[0];
+    return mp(new Node(v->type, val, ch), sum);
 }
 
-bool check9(Node * head) {
+bool check9(Node * head) {  /// (fi[x := 0]) & @x(fi->fi[x := x']))->fi
     if (head->type != "->") return 0;
     Node * fi = head->r;
     if (head->l->type != "&") return 0;
     if (head->l->r->type != "@") return 0;
     string var = head->l->r->l->s;
+    //db(var);
+    //db(fi->s);
 
     auto r1 = makeSubst(createExpCopy(fi), var, new Node("0", "0"), set < string >(), 1);
+    //db(r1.fr->s);
+    //exit(0);
     auto r2 = makeSubst(createExpCopy(fi), var, new Node("'", new Node("a", var), NULL), set < string > (), 1);
 
-    assert(r1.fr == r2.fr);
+    //db(r1.sc);
+    //db(r1.fr->s);
+    //db(r2.fr->s);
+    assert(r1.sc== r2.sc);
     if (r1.fr == 0) return 0;
 
     string g = addBracket(r1.fr->s) + "&@" + var + addBracket(addBracket(fi->s) + "->" + addBracket(r2.fr->s)) + "->" + addBracket(fi->s);
@@ -258,15 +298,25 @@ bool check11(Node * head) {
 
     Node * fi = head->l->r;
 
+    //db2(var, fi->s);
     Node * theta = findTheta(fi, head->r, var);
-    if (theta == NULL) return 0;
+    Node * u;
+    if (theta != NULL) {
+        auto sfree = findFree(theta, set < string > ());
+        flagFail = 0;
+        //auto tmp = makeSubst(head->r, var, theta, sfree, 1);
+        //db(sfree.size());
+        //for (auto x: sfree)
+            //db(x);
+        auto tmp = makeSubst(head->l->r, var, theta, sfree, 1);
+        u = tmp.fr;
+        db(u->s);
+        db(flagFail);
 
-    auto sfree = findFree(theta, set < string > ());
-    flagFail = 0;
-    auto tmp = makeSubst(head->r, var, theta, sfree, 1);
-    Node * u = tmp.fr;
-
-    if (flagFail) return 0;
+        if (flagFail) return 0;
+    }
+    else
+        u = fi;
     
     string nExpr = "@" + var + addBracket(fi->s) + "->" + addBracket(u->s); 
     Parser p(nExpr);
@@ -350,8 +400,10 @@ bool checkRuleAny(Node * head) {
     string var = head->r->l->s;
     Node * fi = head->l;
     Node * psi = head->r->r;
+    auto freeFi = findFree(fi, set < string > ());
+    if (freeFi.count(var) == 1) return 0;
     
-    string s = fi->s + "->" + psi->s;
+    string s = addBracket(fi->s) + "->" + addBracket(psi->s);
     Parser p(s);
     Node * u = p.parseExpr();
     if (proved.count(u->hash) == 0) return 0;
@@ -378,10 +430,23 @@ bool checkRuleAny(Node * head) {
 }
 
 void solve() {
-    //freopen("answer.txt", "w", stdout);
+    freopen("out.txt", "w", stdout);
+
+    for (int i = 0; i < (int)hypoth.size() - 1; i++) {
+        cout << hypoth[i]->s;
+        if (i + 1 < (int)hypoth.size() - 1)
+            cout << ",";
+    } 
+
+    if (!mainHyp.empty()) 
+        cout << "|-" << addBracket(mainHyp) + "->" + target->s << endl;
+    else
+        cout << "|-" << target->s << endl;
 
     for (int i = 0; i < (int)proof.size(); i++) {
-        //db(i);
+        //if (i % 1000 == 0) db(i);
+        db2(i, proof[i]->s);
+        //cout << "----------\n";
         bool flag = 0;
         for (auto v: axiom) {
             matchPart.clear();
@@ -397,7 +462,7 @@ void solve() {
                 flag = 1;
 
         flag |= check9(proof[i]);
-        flag |= check11(proof[i]);
+        flag |= check11(proof[i]); 
         flag |= check12(proof[i]);
 
         if (flag) {
@@ -413,11 +478,10 @@ void solve() {
             flag = 1;
         }
 
-        if (flag == 0) {
+        if (flag == 0) { // MP case
             for (auto x: need[proof[i]->hash]) {
                 if (proved.count(x)) {
                     flag = 1;
-                    cout << proof[i]->s << endl;
                     if (!mainHyp.empty()) {
                         assert(exprFromHash.count(x) == 1);
 
@@ -433,6 +497,8 @@ void solve() {
                         cout << second + "->" + third << endl;
                         cout << third << endl; 
                     }
+                    else
+                        cout << proof[i]->s << endl;
                 }
             }
         } 
@@ -444,6 +510,7 @@ void solve() {
 
         if (!flag) {
             cout << "incorrect evidence from : " << i + 1 << endl;
+            db("WA");
             return;
         }
         proved.insert(proof[i]->hash);
@@ -452,6 +519,7 @@ void solve() {
             need[proof[i]->r->hash].insert(proof[i]->l->hash);
         }
     }
+    db("OK");
 }
 
 
