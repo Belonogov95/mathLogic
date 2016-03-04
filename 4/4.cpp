@@ -8,7 +8,8 @@ vector < Node * > mathAxiom;
 string mainHyp;
 
 void read() {
-    freopen("correct12.in", "r", stdin);
+    //freopen("correct12.in", "r", stdin);
+    freopen("in", "r", stdin);
     //freopen("incorrect11.in", "r", stdin);
     cin.clear();
     string s;
@@ -24,6 +25,10 @@ void read() {
             Parser p(s);
             hypoth.pb(p.parseExpr());
         }
+    }
+    else {
+        Parser p(s);
+        proof.pb(p.parseExpr());
     }
 
     for (; getline(cin, s); ) {
@@ -93,13 +98,14 @@ void init() {
 map < int, ull > matchPart;
 
 bool fit(Node * v, Node * ax) {
-    if (ax->type == "A" || ax->type == "a") {
+    if (ax->type == "A") {
         assert(ax->s.size() == 1);
         int key = ax->s[0];
         if (matchPart.count(key) == 0) 
             matchPart[key] = v->hash;
         else if (matchPart[key] != v->hash)
             return 0;
+        return 1;
     }
     if (ax->type != v->type) return 0;
     bool flag = 1;
@@ -330,6 +336,8 @@ bool checkRuleExist(Node * head) {
 
             cout << addBracket(mainHyp) + "->" + "?" + var + addBracket(u->l->s) + "->" + addBracket(u->r->s) << endl;
         }
+        else
+            cout << head->s << endl;
         return 1;
     }
     else
@@ -363,14 +371,17 @@ bool checkRuleAny(Node * head) {
         printRule(rule3_1, q);
         cout << addBracket(mainHyp) + "->" + addBracket(u->l->s) + "->@" + var + addBracket(u->r->s) << endl;
     }
+    else
+        cout << head->s << endl;
 
     return 1;
 }
 
 void solve() {
-    freopen("answer.txt", "w", stdout);
+    //freopen("answer.txt", "w", stdout);
 
     for (int i = 0; i < (int)proof.size(); i++) {
+        //db(i);
         bool flag = 0;
         for (auto v: axiom) {
             matchPart.clear();
@@ -397,7 +408,7 @@ void solve() {
             }
         }
 
-        if (hypoth.back()->hash == proof[i]->hash && flag == 0) {
+        if (!hypoth.empty() && hypoth.back()->hash == proof[i]->hash && flag == 0) {
             makeAA(proof[i]->s);
             flag = 1;
         }

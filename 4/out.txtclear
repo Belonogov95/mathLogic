@@ -1,0 +1,1 @@
+g++ -std=c++11 -O2 -Wno-unused-result -o bin/4 4.cpp parser.cpp
