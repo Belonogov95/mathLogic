@@ -15,11 +15,9 @@ string removeSpace(string s) {
     return res;
 }
 
-
 vector < string > split(string s, string pattern) {
     vector < string > res;
     int cur = 0;
-    db2(s, pattern);
     for (int i = 0; i + pattern.size() <= s.size(); i++) {
         if (s.substr(i, pattern.size()) == pattern) {
             res.pb(s.substr(cur, i - cur));
@@ -32,8 +30,6 @@ vector < string > split(string s, string pattern) {
     res.pb(s.substr(cur, s.size() - cur));
     return res;
 }
-
-
 
 string OrdinalParser::nextToken() {
     assert(cur <= (int)data.size());

@@ -51,7 +51,7 @@ Ordinal * addW(Ordinal * a, Ordinal * b);
 
 Ordinal * addO(Ordinal * a, Ordinal * b);
 
-Ordinal * mulO(Ordinal * a, Ordinal * b);
+//Ordinal * mulO(Ordinal * a, Ordinal * b);
 
 int c(Ordinal * a, Ordinal * b);
 
@@ -77,7 +77,7 @@ Ordinal * limitpart(Ordinal * a);
 
 int natpart(Ordinal * a);
 
-Ordinal * helperExp3(Ordinal * a, int p, int n, int q);
+//Ordinal * helperExp3(Ordinal * a, int p, int n, int q);
 
 Ordinal * exp3(Ordinal * a, int q);
 
@@ -85,6 +85,7 @@ Ordinal * exp4(Ordinal * a, Ordinal * b);
 
 Ordinal * expO(Ordinal * a, Ordinal * b);
 
+void printOrdinal(Ordinal * a, int tab = 0);
 
 #endif
 
