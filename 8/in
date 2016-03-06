@@ -1,0 +1,45 @@
+2+2=2+2
+
+
+#CXXFLAGS= -std=c++11 -Wno-unused-result -O3
+CXXFLAGS= -std=c++11 -Wno-unused-result -D_GLIBCXX_DEBUG -fsanitize=address
+
+all: 8 
+
+
+ordinalParser.o: ordinalParser.cpp ordinalParser.h
+	g++ $(CXXFLAGS) -c $?
+
+ordinalCalc.o: ordinalCalc.cpp ordinalCalc.h
+	g++ $(CXXFLAGS) -c $?
+
+8.o: 8.cpp 
+	g++ $(CXXFLAGS) -c $?
+
+8: 8.o ordinalParser.o ordinalCalc.o 
+	g++ $(CXXFLAGS) -o $@ $?
+
+clean:
+	rm -f bin/*
+	rm -f *.o 
+
+
+
+#CXXFLAGS= -std=c++11 -Wno-unused-result -O3
+CXXFLAGS= -std=c++11 -Wno-unused-result -D_GLIBCXX_DEBUG -fsanitize=address
+
+all: 8 
+
+
+8: 8.cpp main.h ordinalCalc.cpp ordinalParser.cpp 
+	g++ $(CXXFLAGS) -o bin/$@ $?
+
+clean:
+	rm -f bin/*
+
+
+
+
+
+
+

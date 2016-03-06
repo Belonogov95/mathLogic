@@ -9,12 +9,26 @@ Ordinal::Ordinal(Ordinal * l, Ordinal * r):l(l), r(r), type("p"), val(0) { }
 Ordinal::Ordinal(long long val): l(NULL), r(NULL), type("val"), val(val) { }
 
 
-
-Ordinal * evaluate(shared_ptr < Node > ptr) {
-    if (ptr->type == 
-    
+Ordinal * no(Ordinal * a, Ordinal * b) {
+    return no(a, b);
 }
 
+Ordinal * no(long long x) {
+    return no(x);
+}
+
+Ordinal * evaluate(shared_ptr < Node > ptr) {
+    if (ptr->type == "+")
+        return addO(evaluate(ptr->l), evaluate(ptr->r));
+    if (ptr->type == "*")
+        return mulO(evaluate(ptr->l), evaluate(ptr->r));
+    if (ptr->type == "0") 
+        return no(ptr->val);
+    if (ptr->type == "w")
+        return no(no(no(1), no(1)), no(0));
+
+    assert(false); 
+}
 
 Ordinal * first(Ordinal * a) {
     return a->l;
@@ -24,10 +38,9 @@ Ordinal * rest(Ordinal * a) {
     return a->r;
 }
 
-
 Ordinal * firstn(Ordinal * a, int n) {
     if (n == 0) return NULL;
-    return new Ordinal(first(a), firstn(rest(a), n - 1));
+    return no(first(a), firstn(rest(a), n - 1));
 }
 
 bool atom(Ordinal * a) {
@@ -62,7 +75,7 @@ Ordinal * fc(Ordinal * a) {
 
 Ordinal * append(Ordinal * a, Ordinal * b) {
     if (atom(a)) return b;
-    return new Ordinal(first(a), append(rest(a), b));
+    return no(first(a), append(rest(a), b));
 }
 
 int cmpW(Ordinal * p, Ordinal * q) {
@@ -93,14 +106,7 @@ bool lessO(Ordinal * a, Ordinal * b) {
 Ordinal * addW(Ordinal * a, Ordinal * b) {
     assert(a->type == "val");
     assert(b->type == "val");
-    return new Ordinal(a->val + b->val);
-}
-
-Ordinal * subW(Ordinal * a, Ordinal * b) {
-    assert(a->type == "val");
-    assert(b->type == "val");
-    assert(a->val >= b->val);
-    return new Ordinal(a->val - b->val);
+    return no(a->val + b->val);
 }
 
 
@@ -110,8 +116,8 @@ Ordinal * addO(Ordinal * a, Ordinal * b) {
     int res = cmpO(fe(a), fe(b));
     if (res == -1) return b;
     if (res == 0) 
-        return new Ordinal(new Ordinal(fe(a), addW(fc(a), fc(b))), rest(b));
-    return new Ordinal(new Ordinal(fe(a), fc(a)), addO(rest(a) , b));
+        return no(no(fe(a), addW(fc(a), fc(b))), rest(b));
+    return no(no(fe(a), fc(a)), addO(rest(a) , b));
 }
 
 bool lessEW(Ordinal * a, Ordinal * b) {
@@ -126,34 +132,149 @@ bool lessW(Ordinal * a, Ordinal * b) {
     return a->val < b->val;
 }
 
-Ordinal * subO(Ordinal * a, Ordinal * b) {
-    if (atom(a) && atom(b) && lessEW(a, b)) return new Ordinal(0);
-    if (atom(a) && atom(b)) return subW(a, b);
-    if (cmpO(fe(a), fe(b)) == -1) return new Ordinal(0);
-    if (cmpO(fe(a), fe(b)) == 1) return a;
-    if (lessW(fc(a), fc(b))) return 0;
-    if (lessW(fc(b), fc(a))) 
-        return new Ordinal(new Ordinal(fe(a), addW(fc(a), fc(b))), rest(a));
-    return subO(rest(a), rest(b));
-}
-
-
 Ordinal * mulW(Ordinal * a, Ordinal * b) {
     assert(a->type == "val");
     assert(b->type == "val");
-    return new Ordinal(a->val * b->val);
+    return no(a->val * b->val);
 }
 
 Ordinal * mulO(Ordinal * a, Ordinal * b) {
-    if (atom(a) && a->val == 0) return new Ordinal(0);
-    if (atom(b) && b->val == 0) return new Ordinal(0);
+    if (atom(a) && a->val == 0) return no(0);
+    if (atom(b) && b->val == 0) return no(0);
 
     if (atom(a) && atom(b)) return mulW(a, b);
-    if (atom(b)) return new Ordinal(new Ordinal(fe(a), mulW(fc(a), b)), rest(a));
-    return new Ordinal(new Ordinal(addO(fe(a), fe(b)), fc(b)), mulO(a, rest(b)));
+    if (atom(b)) return no(no(fe(a), mulW(fc(a), b)), rest(a));
+    return no(no(addO(fe(a), fe(b)), fc(b)), mulO(a, rest(b)));
+}
+
+int c(Ordinal * a, Ordinal * b) {
+    if (lessO(fe(b), fe(a))) return 1 + c(rest(a), b);
+    return 0;
+}
+
+int count(Ordinal * a, Ordinal * b, int n) {
+    return n + c(restn(a, n), b);
 }
 
 
+Ordinal * padd(Ordinal * a, Ordinal * b, int n) {
+    return append(firstn(a, n), addO(restn(a, n), b));
+}
+
+Ordinal * pmult(Ordinal * a, Ordinal * b, int n) {
+    if (atom(a) && a->val == 0) return no(0);
+    if (atom(b) && b->val == 0) return no(0);
+    if (atom(a) && atom(b)) return mulW(a, b);
+    if (atom(b)) return no(no(fe(a), mulW(fc(a), b)), rest(a));
+    int m = count(fe(a), fe(b), n);
+    return no(no(padd(fe(a), fe(b), m), fc(b)), pmult(a, rest(b), m));
+}
+
+Ordinal * mulDot(Ordinal * a, Ordinal * b) {
+    return pmult(a, b, 0);
+}
+
+long long binPow(long long a, long long b) {
+    long long res = 1;
+    for (; b > 0; b /= 2) {
+        if (b % 2 == 1)
+            res = res * a;
+        a = a * a;
+    }
+    return res;
+}
+
+
+Ordinal * subW(Ordinal * a, Ordinal * b) {
+    assert(a->type == "val");
+    assert(b->type == "val");
+    assert(a->val >= b->val);
+    return no(a->val - b->val);
+}
+
+Ordinal * subO(Ordinal * a, Ordinal * b) {
+    if (atom(a) && atom(b) && lessEW(a, b)) return no(0);
+    if (atom(a) && atom(b)) return subW(a, b);
+    if (cmpO(fe(a), fe(b)) == -1) return no(0);
+    if (cmpO(fe(a), fe(b)) == 1) return a;
+    if (lessW(fc(a), fc(b))) return 0;
+    if (lessW(fc(b), fc(a))) 
+        return no(no(fe(a), addW(fc(a), fc(b))), rest(a));
+    return subO(rest(a), rest(b));
+}
+
+    
+Ordinal * expW(Ordinal * a, Ordinal * b) {
+    assert(a->type == "val");
+    assert(b->type == "val");
+    int x = a->val;
+    int y = b->val;
+    return no(binPow(x, y)); 
+}
+
+Ordinal * exp1(int p, Ordinal * b) {
+    if (cmpO(fe(b), no(1)) == 0) 
+        return no(no(fc(b), expW(no(p), rest(b))), no(0));
+    if (atom(rest(b))) {
+        Ordinal * t1 = no(subO(fe(b), no(1)), fc(b));
+        Ordinal * t2 = no(t1, 0);
+        Ordinal * t3 = no(t2, expW(no(p), rest(b)));
+        return no(t3, no(0));
+    } 
+    Ordinal * c = exp1(p, rest(b));
+    return no(no(no(no(subO(fe(b), no(1)), no(1)), fe(c)), fc(c)), no(0));
+}
+
+Ordinal * exp2(Ordinal * a, int q) {
+    if (q == 1) return a;
+    return mulDot(no(no(mulDot(fe(a), no(q - 1)), no(1)), no(0)), a);
+}
+
+bool limitp(Ordinal * a) {
+    if (atom(a)) return a->val == 0;
+    return limitp(rest(a));
+}
+
+Ordinal * limitpart(Ordinal * a) {
+    if (atom(a)) return no(0);
+    return no(first(a), limitpart(rest(a)));
+}
+
+int natpart(Ordinal * a) {
+    if (atom(a)) return a->val;
+    return natpart(rest(a));
+}
+
+Ordinal * helperExp3(Ordinal * a, int p, int n, int q) {
+    if (q == 0) return no(p);
+    return padd(mulDot(exp2(a, q), no(p)), helperExp3(a, p, n, q - 1), n);
+}
+
+Ordinal * exp3(Ordinal * a, int q) {
+    if (q == 0) return no(1);
+    if (q == 1) return a; 
+    if (limitp(a)) return exp2(a, q);
+    Ordinal * c = limitpart(a);
+    int n = len(a);
+    Ordinal * tmp = helperExp3(c, natpart(a), n, q - 1);
+    assert(tmp->type == "val");
+    //return padd(firstn(exp2(c, q), tmp->val), n);
+    return mulDot(exp3(a, q - 1), a);
+}
+
+Ordinal * exp4(Ordinal * a, Ordinal * b) {
+    return mulDot(no(no(mulDot(fe(a), limitpart(b)), no(1)), no(0)), exp3(a, natpart(b)));
+}
+
+Ordinal * expO(Ordinal * a, Ordinal * b) {
+    if ((atom(b) && b->val == 0) || (atom(a) && a->val == 1)) return no(1);
+    if (atom(a) && a->val == 0) return no(0);
+    if (atom(a) && atom(b)) return expW(a, b);
+    if (atom(a)) return exp1(a->val, b);
+    if (atom(b)) return exp3(a, b->val);
+    return exp4(a, b);
+
+}
 
 
 

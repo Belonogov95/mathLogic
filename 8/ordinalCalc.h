@@ -37,8 +37,6 @@ Ordinal * append(Ordinal * a, Ordinal * b);
 
 int cmpW(Ordinal * p, Ordinal * q);
 
-Ordinal * subW(Ordinal * a, Ordinal * b);
-
 Ordinal * addW(Ordinal * a, Ordinal * b);
 
 bool lessW(Ordinal * a, Ordinal * b);
@@ -51,13 +49,41 @@ bool lessO(Ordinal * a, Ordinal * b);
 
 Ordinal * addW(Ordinal * a, Ordinal * b);
 
-Ordinal * subW(Ordinal * a, Ordinal * b);
-
 Ordinal * addO(Ordinal * a, Ordinal * b);
+
+Ordinal * mulO(Ordinal * a, Ordinal * b);
+
+int c(Ordinal * a, Ordinal * b);
+
+int count(Ordinal * a, Ordinal * b, int n);
+
+Ordinal * padd(Ordinal * a, Ordinal * b, int n);
+
+Ordinal * pmult(Ordinal * a, Ordinal * b, int n);
+
+Ordinal * mulDot(Ordinal * a, Ordinal * b);
 
 Ordinal * subO(Ordinal * a, Ordinal * b);
 
-Ordinal * mulO(Ordinal * a, Ordinal * b);
+Ordinal * subW(Ordinal * a, Ordinal * b);
+
+Ordinal * exp1(int p, Ordinal * b);
+
+Ordinal * exp2(Ordinal * a, int q);
+
+bool limitp(Ordinal * a); 
+
+Ordinal * limitpart(Ordinal * a);
+
+int natpart(Ordinal * a);
+
+Ordinal * helperExp3(Ordinal * a, int p, int n, int q);
+
+Ordinal * exp3(Ordinal * a, int q);
+
+Ordinal * exp4(Ordinal * a, Ordinal * b);
+
+Ordinal * expO(Ordinal * a, Ordinal * b);
 
 
 #endif
