@@ -5,4 +5,5 @@ tests/
 *.in
 *.out
 4/bin
+8/bin
 *.swp

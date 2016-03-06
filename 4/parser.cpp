@@ -24,24 +24,6 @@ string replace(string s, char u, string t) {
     return ans;
 }
 
-vector < string > splitBalance(string s, string pattern) {
-    vector < string > res;
-    int cur = 0;
-    int bal = 0;
-    for (int i = 0; i + pattern.size() <= s.size(); i++) {
-        if (bal == 0 && s.substr(i, pattern.size()) == pattern) {
-            res.pb(s.substr(cur, i - cur));
-            i += pattern.size();
-            cur = i;
-            i--;
-        }
-        if (s[i] == '(') bal++;
-        if (s[i] == ')') bal--;
-    }
-    assert(cur < (int)s.size());
-    res.pb(s.substr(cur, s.size() - cur));
-    return res;
-}
 
 vector < string > split(string s, string pattern) {
     vector < string > res;
@@ -143,6 +125,24 @@ Node * Parser::parsePredicate() {
         for (; nextToken().size() == 1 && isdigit(nextToken()[0]); ) {
             name += nextToken();
             shiftCur();
+        }
+        vector < Node * > ch;
+        if (nextToken() == "(") {
+            shiftCur();
+            ch.pb(parseTerm());
+            for (; nextToken() == ",";) {
+                shiftCur();
+                ch.pb(parseTerm());
+            }
+            assert(nextToken() == ")");
+            shiftCur();
+        }
+        return new Node("A", name, ch);
+    }
+    else {
+        Node * v = parseTerm();
+
+        //db2(nextToken(), cur);
         }
         vector < Node * > ch;
         if (nextToken() == "(") {
@@ -287,24 +287,6 @@ Node * Parser::parseUnar() {
     return parsePredicate();
 }
 
-Node * Parser::parseConjunct() {
-    Node * v = parseUnar();
-    if (v == NULL) return NULL;
-    for (; nextToken() == "&"; ) {
-        shiftCur();
-        Node * u = parseUnar();
-        if (u == NULL) return NULL;
-        v = new Node("&", v, u);
-    }
-    return v;
-}
-
-Node * Parser::parseDisjunct() {
-    Node * v = parseConjunct();
-    if (v == NULL) return NULL;
-    for (; nextToken() == "|"; ) {
-        shiftCur();
-        Node * u = parseConjunct();
         if (u == NULL) return NULL;
         v = new Node("|", v, u);
     }
