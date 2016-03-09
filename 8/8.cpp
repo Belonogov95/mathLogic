@@ -7,8 +7,6 @@
 const int N = -1;
 const long long INF = 1e9 + 19;
 
-
-
 char s[100];
 
 void read() {
@@ -23,12 +21,10 @@ void read() {
     }
     for (auto in: testsName) {
 
-        //db(in);
         freopen(in.data(), "r", stdin);
         cin.clear();
         string s;
         getline(cin, s);
-        //db(s);
         s = removeSpace(s);
         auto tmp = split(s, "=");
         auto left = parseOrdinal(tmp[0]);
