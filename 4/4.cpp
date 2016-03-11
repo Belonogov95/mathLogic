@@ -23,7 +23,6 @@ void read() {
     if (tmp[0].empty()) 
         tmp.erase(tmp.begin());
     assert(tmp.size() == 2 || tmp.size() == 1);
-
     //db(tmp.size());
     //db2(tmp[0], tmp[1]);
     if (tmp.size() == 2) {
@@ -45,15 +44,15 @@ void read() {
     target = p.parseExpr();
 
     for (int it = 0; getline(cin, s);it++ ) {
-        if (it % 1000 == 0)
-            db(it);
+        //if (it % 1000 == 0)
+            //db(it);
         s = removeSpace(s);
         if (s.empty()) continue;
         Parser p(s);
         proof.pb(p.parseExpr());
     }
     //assert(!proof.empty() && target->hash == proof.back()->hash);
-    db(proof.size());
+    //db(proof.size());
 }
 
 vector < string > rule2; 
@@ -70,7 +69,7 @@ void init() {
         Parser p(s);
         axiom.pb(p.parseExpr());
     }
-    db(axiom.size());
+    //db(axiom.size());
 
     freopen("axiom_math.txt", "r", stdin);
     cin.clear();
