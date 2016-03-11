@@ -456,9 +456,6 @@ void solve() {
         cout << "|-" << target->s << endl;
 
     for (int i = 0; i < (int)proof.size(); i++) {
-        //if (i % 1000 == 0) db(i);
-        //db2(i, proof[i]->s);
-        //cout << "----------\n";
         bool flag = 0;
         for (auto v: axiom) {
             matchPart.clear();
