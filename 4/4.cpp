@@ -73,7 +73,6 @@ void init() {
 
     freopen("axiom_math.txt", "r", stdin);
     cin.clear();
-
     for (; getline(cin, s); ) {
         s = removeSpace(s);
         if (s.empty()) continue;
@@ -335,8 +334,12 @@ bool check12(Node * head) {
     string var = head->r->l->s;
     Node * fi = head->r->r;
 
+    //db2(fi->s, head->l->s);
     Node * theta = findTheta(fi, head->l, var);
-    if (theta == NULL) return 0;
+    //db(theta);
+    //db(theta->s);
+    if (theta == NULL) theta = new Node("a", var);
+    //if (theta == NULL) return 0;
 
     auto sfree = findFree(theta, set < string > ());
 
@@ -441,7 +444,7 @@ bool checkRuleAny(Node * head) {
 }
 
 void solve() {
-    freopen("out.txt", "w", stdout);
+    //freopen("out.txt", "w", stdout);
 
     for (int i = 0; i < (int)hypoth.size() - 1; i++) {
         cout << hypoth[i]->s;
@@ -517,6 +520,7 @@ void solve() {
 
 
         if (!flag) {
+            cerr << proof[i]->s << endl;
             cout << "incorrect evidence from : " << i + 1 << endl;
             db("WA");
             return;
@@ -535,16 +539,6 @@ int main() {
     read();
     init();
     solve();
-
-
-    //for (int t = 0; t < 2; t++) {
-        //string s;
-        //getline(cin, s);
-        //Parser parser(s);
-        //Node * v = parser.parseExpr();
-        //db(v->hash.val);
-    //}
-
 }
 
 

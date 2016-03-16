@@ -21,7 +21,6 @@ void findVar(Node * v) {
 }
 
 void read() {
-    freopen("in", "r", stdin); 
     string s;
     getline(cin, s);
     Parser p(s);
