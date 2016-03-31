@@ -334,6 +334,8 @@ bool check12(Node * head) {
     string var = head->r->l->s;
     Node * fi = head->r->r;
 
+    //db(var)
+    if (mainHypFreeVar.count(var) == 1) return 0;
     //db2(fi->s, head->l->s);
     Node * theta = findTheta(fi, head->l, var);
     //db(theta);
@@ -344,16 +346,24 @@ bool check12(Node * head) {
     auto sfree = findFree(theta, set < string > ());
 
     flagFail = 0;
-    auto tmp = makeSubst(head->l, var, theta, sfree, 1);
+    //auto tmp = makeSubst(head->l, var, theta, sfree, 1);
+    auto tmp = makeSubst(fi, var, theta, sfree, 1);
+    //db2(head->l->s, tmp.fr->s);
+    //db(fi->s);
     Node * u = tmp.fr;
 
     if (flagFail) return 0;
     
     //string nExpr = "@" + var + addBracket(fi->s) + "->" + addBracket(u->s); 
     string nExpr = addBracket(u->s) + "->" + "?" + var + addBracket(fi->s);
+    //db(nExpr);
     Parser p(nExpr);
     Node * g = p.parseExpr();
-    if (g->hash == head->hash) return 1;
+    //db2(g->s, head->s);
+    if (g->hash == head->hash) {
+        assert(g->s == head->s);
+        return 1;
+    }
     return 0;
 }
 
@@ -444,6 +454,12 @@ bool checkRuleAny(Node * head) {
 }
 
 void solve() {
+    //cerr << "mainHyp:\n";
+    //for (auto x: mainHypFreeVar)
+        //db(x);
+    //cerr << endl;
+
+
     //freopen("out.txt", "w", stdout);
 
     for (int i = 0; i < (int)hypoth.size() - 1; i++) {
@@ -458,6 +474,8 @@ void solve() {
         cout << "|-" << target->s << endl;
 
     for (int i = 0; i < (int)proof.size(); i++) {
+        //if (i >= 58)
+            //cerr << proof[i]->s << endl;
         bool flag = 0;
         for (auto v: axiom) {
             matchPart.clear();
@@ -472,9 +490,12 @@ void solve() {
             if (mathAxiom[j]->hash == proof[i]->hash) 
                 flag = 1;
 
+
         flag |= check9(proof[i]);
         flag |= check11(proof[i]); 
+        //db2("tut", flag);
         flag |= check12(proof[i]);
+        //db2("after", flag);
 
         if (flag) {
             cout << proof[i]->s << endl; 
@@ -488,6 +509,7 @@ void solve() {
             makeAA(proof[i]->s);
             flag = 1;
         }
+        //db2(i, flag);
 
         if (flag == 0) { // MP case
             for (auto x: need[proof[i]->hash]) {
@@ -514,10 +536,10 @@ void solve() {
             }
         } 
 
+        //db2(i, flag);
         if (!flag) flag |= checkRuleExist(proof[i]);
+        //db2(i, flag);
         if (!flag) flag |= checkRuleAny(proof[i]);
-
-
 
         if (!flag) {
             cerr << proof[i]->s << endl;
